@@ -74,3 +74,27 @@ Wersja w Word (te same notatki w 7 tabelach): [notatki-cwiczenie-03.docx](notatk
 | Test | Czego nie sprawdza | Asercja, która to naprawi |
 |---|---|---|
 | 05 › cena na karcie produktu jest taka sama jak na kafelku | W ogóle nie czyta ceny z kafelka, tylko porównuje kartę z wpisanym na sztywno `26,39 zł`. | Przed otwarciem karty: `await expect(page.getByRole('article', { name: 'Krem do twarzy na dzień' }).getByTestId('tile-price')).toHaveText('26,39 zł');` |
+
+## Podsumowanie: czego testy nie sprawdzają
+
+### Runda 1 (`tests/czytanie/01`–`03`)
+
+| Test | Czego test nie sprawdza |
+|---|---|
+| 01 › wyszukiwanie „zębów” znajduje dwa produkty | że kafelki pokazują te same produkty; że pole wyszukiwania zachowało wpisany tekst; że wyszukiwanie działa bez względu na wielkość liter |
+| 01 › wyszukiwanie bez wyników pokazuje komunikat | że licznik pokazuje `0`; że tabela i kafelki są puste |
+| 02 › Moje zamówienia › lista pokazuje zamówienia klienta z ich statusem | statusu ZAM-1001 (nazwa obiecuje statusy, sprawdzony jest tylko jeden); pozostałych zamówień klienta (1003, 1004, 1006) i ich liczby; daty, ilości, wartości |
+| 02 › Moje zamówienia › klient nie widzi zamówienia innej osoby | że `user` nie otworzy `/zamowienia/ZAM-1005` z adresu; że API `/api/orders` nie zwraca cudzego zamówienia |
+| 03 › produktu niedostępnego nie da się dodać do koszyka | **tego, co obiecuje nazwa**: że przycisku „Dodaj do koszyka” nie da się użyć ani że produkt nie trafi do koszyka |
+
+### Runda 2 (`tests/czytanie/04`–`06`)
+
+| Test | Czego test nie sprawdza |
+|---|---|
+| 04-ceny-promocyjne (cały plik) | że plakietka mówi „-20%” (sprawdzona jest tylko jej widoczność); że rabat to 20%: żadna linia tego nie liczy, ceny są przepisane na sztywno; ceny w tabeli, na karcie produktu i w koszyku; że produkty bez promocji nie mają plakietki |
+| 05 › karta produktu pokazuje opis i dostępność | treści całego opisu; ceny; że przycisk „Dodaj do koszyka” jest aktywny |
+| 05 › cena na karcie produktu jest taka sama jak na kafelku | **porównania z kafelkiem**: test w ogóle nie czyta ceny z kafelka, tylko porównuje z liczbą wpisaną na sztywno; starej ceny i plakietki na karcie |
+| 05 › produktu niedostępnego nie da się dodać do koszyka z karty produktu | że pole „Ilość” jest wyłączone; że wysłanie formularza albo API odrzuci dodanie; że koszyk zostaje pusty |
+| 06-filtr-kategorii (cały plik) | że **wszystkie** wiersze należą do wybranej kategorii; że liczba wierszy w tabeli zgadza się z licznikiem; kafelków; pozostałych kategorii i opcji „Wszystkie” |
+
+> **Naprawione:** do testu `03-produkt-niedostepny.spec.ts` dopisałam brakującą asercję `await expect(wiersz.getByRole('button', { name: 'Dodaj do koszyka' })).toBeDisabled();`. Test przechodzi (`1 passed`).
