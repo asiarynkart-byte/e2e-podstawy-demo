@@ -2,6 +2,8 @@
 
 # Ćwiczenie 03: czytanie testów
 
+Wersja w Word (te same notatki w 7 tabelach): [notatki-cwiczenie-03.docx](notatki-cwiczenie-03.docx)
+
 ## Runda 1: testy po poprzedniku (`tests/czytanie/01`–`03`)
 
 | Test | Co robi użytkownik | Co test sprawdza | Czego test nie sprawdza | Kiedy zrobi się czerwony |
@@ -12,36 +14,37 @@
 | 02 › Moje zamówienia › klient nie widzi zamówienia innej osoby | jak wyżej: wchodzi na `/zamowienia` i loguje się jako `user` | wiersz ZAM-1001 jest widoczny (czyli lista się załadowała), a wiersza ZAM-1005 (zamówienie admina) nie ma | że `user` nie otworzy `/zamowienia/ZAM-1005` z adresu; że API `/api/orders` nie zwraca cudzego zamówienia | lista pokaże zamówienia wszystkich klientów; ZAM-1001 zniknie z danych (np. po teście, który je anuluje / usuwa) |
 | 03 › produktu niedostępnego nie da się dodać do koszyka | otwiera stronę główną i patrzy na wiersz „Serum z witaminą C” | wiersz z „Serum z witaminą C” jest widoczny i ma tekst „Niedostępny” | **tego, co obiecuje nazwa**: że przycisku „Dodaj do koszyka” nie da się użyć ani że produkt nie trafi do koszyka | serum zniknie z listy albo dostanie stan > 0; zmieni się napis „Niedostępny”. Nie zrobi się czerwony, gdy przycisk przestanie być wyłączony |
 
-### Odpowiedzi do kroków 2–6
+### Odpowiedzi do kroków 2–4
 
-**01-wyszukiwarka**
-- `test.beforeEach` otwiera stronę główną (`/`) przed każdym testem w pliku. W pliku są 2 testy, więc wykona się 2 razy.
-- Stała `wyszukiwarka` to **pole na stronie** (typ `Locator`), a nie wpisany tekst. Tekst „zębów” wpisuje dopiero `fill`.
-- `exact: true` jest potrzebne, bo w tym samym wierszu jest przycisk z etykietą „Dodaj do koszyka: Pasta do zębów”. Bez `exact` nazwa „Pasta do zębów” pasuje też do komórki z przyciskiem (dopasowanie fragmentu), lokator znajduje 2 elementy i Playwright zgłasza błąd „strict mode violation”.
+| Plik | Pytanie | Odpowiedź |
+|---|---|---|
+| 01-wyszukiwarka | Co robi `test.beforeEach` i ile razy się wykona? | Otwiera stronę główną (`/`) przed każdym testem w pliku. W pliku są 2 testy, więc wykona się 2 razy. |
+| 01-wyszukiwarka | Co jest w stałej `wyszukiwarka`? | **Pole na stronie** (typ `Locator`), a nie wpisany tekst. Tekst „zębów” wpisuje dopiero `fill`. |
+| 01-wyszukiwarka | Dlaczego `exact: true`? | W tym samym wierszu jest przycisk z etykietą „Dodaj do koszyka: Pasta do zębów”. Bez `exact` nazwa „Pasta do zębów” pasuje też do komórki z przyciskiem (dopasowanie fragmentu), lokator znajduje 2 elementy i Playwright zgłasza błąd „strict mode violation”. |
+| 02-moje-zamowienia | Pod jaką nazwą testy są w raporcie? Co zmienia `test.describe`? | `Moje zamówienia › lista pokazuje zamówienia klienta z ich statusem` oraz `Moje zamówienia › klient nie widzi zamówienia innej osoby`. `test.describe` grupuje testy i dokleja nazwę grupy z przodu. |
+| 02-moje-zamowienia | Skąd pole „Login” na `/zamowienia`? | Bez logowania `/zamowienia` przekierowuje na `/logowanie?next=/zamowienia`. Po zalogowaniu aplikacja wraca na `/zamowienia`. |
+| 02-moje-zamowienia | Co się stanie po usunięciu linii z `ZAM-1001`? | Asercja `toHaveCount(0)` dla ZAM-1005 spełni się od razu, bo lista jeszcze się ładuje (0,5–2 s) i nie ma żadnych wierszy. Test byłby zielony, nawet gdyby ZAM-1005 pojawiło się chwilę później. Linia z ZAM-1001 każe najpierw poczekać na załadowanie listy. |
+| 02-moje-zamowienia | Uwaga dodatkowa | Ostatnia linia z „Ładowanie…” w pierwszym teście niewiele daje: skoro wiersze są widoczne, ładowanie już się skończyło. |
+| 03-produkt-niedostepny | Jakiej asercji brakuje? | `await expect(wiersz.getByRole('button', { name: 'Dodaj do koszyka' })).toBeDisabled();` |
 
-**02-moje-zamowienia**
-- W raporcie: `Moje zamówienia › lista pokazuje zamówienia klienta z ich statusem` oraz `Moje zamówienia › klient nie widzi zamówienia innej osoby`. `test.describe` grupuje testy i dokleja nazwę grupy z przodu.
-- Pole „Login” jest tam, bo `/zamowienia` bez logowania przekierowuje na `/logowanie?next=/zamowienia`. Po zalogowaniu aplikacja wraca na `/zamowienia`.
-- Po usunięciu linii z ZAM-1001 asercja `toHaveCount(0)` dla ZAM-1005 spełni się od razu, bo lista jeszcze się ładuje (0,5–2 s) i nie ma w niej żadnych wierszy. Test byłby zielony nawet wtedy, gdyby ZAM-1005 pojawiło się chwilę później. Linia z ZAM-1001 każe najpierw poczekać, aż lista się załaduje.
-- Ostatnia linia z `Ładowanie…` w pierwszym teście niewiele daje: skoro wiersze są widoczne, ładowanie już się skończyło.
+### Linie z `await` (krok 5): razem 28
 
-**03-produkt-niedostepny: brakująca asercja**
-```ts
-await expect(wiersz.getByRole('button', { name: 'Dodaj do koszyka' })).toBeDisabled();
-```
+| Plik | Liczba | Czeka na przeglądarkę (`goto`, `fill`, `click`): linie | Czeka na spełnienie oczekiwania (`expect`): linie |
+|---|---|---|---|
+| 01-wyszukiwarka | 9 | 6, 12, 13, 21, 22 | 15, 16, 17, 24 |
+| 02-moje-zamowienia | 16 | 7, 8, 9, 10, 26, 27, 28, 29 | 12, 13, 16, 19, 20, 22, 31, 32 |
+| 03-produkt-niedostepny | 3 | 6 | 10, 11 |
+| Jak czeka | | `goto` czeka na załadowanie strony; `fill` na gotowe pole; `click` na widoczny i aktywny przycisk | `await expect(...)` ponawia sprawdzenie aż do skutku albo do limitu czasu (domyślnie 5 s) |
 
-**Linie z `await`: 28 (9 w `01`, 16 w `02`, 3 w `03`)**
-- Na przeglądarkę (akcja): `page.goto` (czeka na załadowanie strony), `fill` (czeka, aż pole będzie gotowe, i wpisuje tekst), `click` (czeka, aż przycisk będzie widoczny i aktywny, i klika).
-  - `01`: linie 6, 12, 13, 21, 22 · `02`: 7, 8, 9, 10, 26, 27, 28, 29 · `03`: 6
-- Na spełnienie oczekiwania (`await expect(...)`): ponawia sprawdzenie aż do skutku albo do limitu czasu (domyślnie 5 s).
-  - `01`: linie 15, 16, 17, 24 · `02`: 12, 13, 16, 19, 20, 22, 31, 32 · `03`: 10, 11
+### Wynik uruchomienia (krok 6): `5 passed`
 
-**Krok 6: wynik uruchomienia: `5 passed`**
-- 01 › „zębów”: zielony wynik potwierdza nazwę.
-- 01 › bez wyników: potwierdza (komunikat jest).
-- 02 › lista ze statusem: potwierdza częściowo, bo sprawdzony jest status tylko jednego zamówienia.
-- 02 › cudze zamówienie: potwierdza, ale tylko na liście; bezpośredniego adresu nikt nie sprawdza.
-- 03 › produkt niedostępny: **nie potwierdza**. Test jest zielony, choć nigdzie nie próbuje dodać produktu do koszyka ani nie sprawdza przycisku.
+| Test | Potwierdza nazwę? | Komentarz |
+|---|---|---|
+| 01 › wyszukiwanie „zębów” znajduje dwa produkty | Tak | Liczba i oba produkty sprawdzone. |
+| 01 › wyszukiwanie bez wyników pokazuje komunikat | Tak | Komunikat jest widoczny. |
+| 02 › lista pokazuje zamówienia klienta z ich statusem | Częściowo | Sprawdzony status tylko jednego zamówienia. |
+| 02 › klient nie widzi zamówienia innej osoby | Częściowo | Tylko na liście; bezpośredniego adresu nikt nie sprawdza. |
+| 03 › produktu niedostępnego nie da się dodać do koszyka | **Nie** | Zielony, choć nigdzie nie próbuje dodać produktu do koszyka ani nie sprawdza przycisku. |
 
 ## Runda 2: testy od Klaudiusza (`tests/czytanie/04`–`06`)
 
@@ -53,26 +56,21 @@ await expect(wiersz.getByRole('button', { name: 'Dodaj do koszyka' })).toBeDisab
 | 05 › produktu niedostępnego nie da się dodać do koszyka z karty produktu | (w funkcji) karta „Maska do włosów z olejem arganowym” ma h1; dostępność to dokładnie „Niedostępny”; przycisk „Dodaj do koszyka” jest wyłączony | że pole „Ilość” jest wyłączone; że wysłanie formularza / API odrzuci dodanie; że koszyk zostaje pusty |
 | 06-filtr-kategorii (jeden wiersz na cały plik) | dla kategorii Włosy, Dziecko, Dom: po wybraniu kategorii i „Filtruj” licznik pokazuje 4 / 3 / 1, a w tabeli jest jeden przykładowy produkt tej kategorii | że **wszystkie** wiersze należą do wybranej kategorii (liczba + jeden produkt nie wykluczają innych produktów); że liczba wierszy w tabeli zgadza się z licznikiem; kafelków; pozostałych kategorii i opcji „Wszystkie” |
 
-### Odpowiedzi do kroku 7
+### Odpowiedzi do kroków 7–8
 
-**04-ceny-promocyjne**
-- Powstaną 3 testy (pętla po 3 produktach):
-  - `Ceny promocyjne na kafelkach › Odżywka do włosów ma cenę obniżoną o 20%`
-  - `Ceny promocyjne na kafelkach › Krem do twarzy na dzień ma cenę obniżoną o 20%`
-  - `Ceny promocyjne na kafelkach › Serum z witaminą C ma cenę obniżoną o 20%`
-- Rabatu „o 20%” nie sprawdza żadna linia. Linia 22 porównuje cenę z liczbą policzoną ręcznie w tablicy, a linia 23 sprawdza tylko, że plakietka jest widoczna, a nie jej tekst. Poprawka: `await expect(kafelek.getByTestId('tile-badge')).toHaveText('-20%');`
-
-**05-karta-produktu**
-- `otworzKarteProduktu` otwiera stronę główną, w kafelku produktu klika link z nazwą i **sprawdza** (`expect`), że jest nagłówek h1 z nazwą produktu. To asercja ukryta w funkcji.
-- Drugi test ma razem 2 asercje: nagłówek h1 (w funkcji, linia 10) i cenę `26,39 zł` (linia 23).
-- `CLAUDE.md`: bez Page Object, własnych fixtures i **funkcji pomocniczych, chyba że użytkownik o nie poprosi**. Dodatkowo import `type Page` łamie zasadę „importuj wyłącznie `{ test, expect }`”.
-
-**06-filtr-kategorii**
-- Powstanie 6 testów (3 kategorie × 2 testy). Przykładowa pełna nazwa: `Filtr kategorii › kategoria Dom › licznik pokazuje liczbę produktów w kategorii`.
-- Kolejność przed „licznik…” dla kategorii Dom: najpierw zewnętrzny `beforeEach` (otwiera `/`), potem wewnętrzny (wybiera „Dom” w „Kategoria” i klika „Filtruj”), na końcu sam test.
-
-**Krok 8:** `--list` pokazało `Total: 12 tests in 3 files` (3 + 3 + 6), nazwy zgadzają się z odpowiedziami powyżej. Uruchomienie: `12 passed`.
+| Plik | Pytanie | Odpowiedź |
+|---|---|---|
+| 04-ceny-promocyjne | Ile testów i jakie nazwy? | 3 testy (pętla po 3 produktach): `Ceny promocyjne na kafelkach › Odżywka do włosów ma cenę obniżoną o 20%`, `… › Krem do twarzy na dzień ma cenę obniżoną o 20%`, `… › Serum z witaminą C ma cenę obniżoną o 20%` |
+| 04-ceny-promocyjne | Która linia sprawdza „obniżoną o 20%”? | Żadna. Linia 22 porównuje cenę z liczbą policzoną ręcznie, linia 23 sprawdza tylko widoczność plakietki, nie jej tekst. Poprawka: `await expect(kafelek.getByTestId('tile-badge')).toHaveText('-20%');` |
+| 05-karta-produktu | Co robi `otworzKarteProduktu`? | Otwiera stronę główną, w kafelku produktu klika link z nazwą i **sprawdza** (`expect`), że jest nagłówek h1 z nazwą produktu. To asercja ukryta w funkcji. |
+| 05-karta-produktu | Ile asercji ma drugi test? | 2: nagłówek h1 (w funkcji, linia 10) i cena `26,39 zł` (linia 23). |
+| 05-karta-produktu | Co mówi `CLAUDE.md` o funkcjach pomocniczych? | Bez Page Object, własnych fixtures i **funkcji pomocniczych, chyba że użytkownik o nie poprosi**. Dodatkowo import `type Page` łamie zasadę „importuj wyłącznie `{ test, expect }`”. |
+| 06-filtr-kategorii | Ile testów i pełna nazwa jednego z nich? | 6 testów (3 kategorie × 2 testy), np. `Filtr kategorii › kategoria Dom › licznik pokazuje liczbę produktów w kategorii`. |
+| 06-filtr-kategorii | Kolejność `beforeEach` przed „licznik…” dla Dom? | 1) zewnętrzny `beforeEach` otwiera `/`; 2) wewnętrzny wybiera „Dom” w „Kategoria” i klika „Filtruj”; 3) sam test. |
+| Krok 8 | Wynik `--list` i uruchomienia | `Total: 12 tests in 3 files` (3 + 3 + 6), nazwy zgodne z odpowiedziami. Uruchomienie: `12 passed`. |
 
 ### Komentarz do Klaudiusza (krok 9)
 
-> Klaudiusz, test `05 › cena na karcie produktu jest taka sama jak na kafelku` w ogóle nie czyta ceny z kafelka, tylko porównuje kartę z wpisanym na sztywno `26,39 zł`. Dopisz przed otwarciem karty `await expect(page.getByRole('article', { name: 'Krem do twarzy na dzień' }).getByTestId('tile-price')).toHaveText('26,39 zł');`, żeby obie ceny były naprawdę sprawdzone.
+| Test | Czego nie sprawdza | Asercja, która to naprawi |
+|---|---|---|
+| 05 › cena na karcie produktu jest taka sama jak na kafelku | W ogóle nie czyta ceny z kafelka, tylko porównuje kartę z wpisanym na sztywno `26,39 zł`. | Przed otwarciem karty: `await expect(page.getByRole('article', { name: 'Krem do twarzy na dzień' }).getByTestId('tile-price')).toHaveText('26,39 zł');` |
