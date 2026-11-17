@@ -101,3 +101,47 @@ Pierwsza wersja planu (zanim powstał kod) i poprawki po review:
 | 10. Plik `faktura-<numer>.html`, NIP nabywcy, nabywca, pozycja, „Razem do zapłaty” | `Wtedy pobiorę plik…`, `faktura będzie zawierać…`, tabela pozycji | Gherkin nie sprawdza nazwy nabywcy „Biuro Mikołaja”; Azure nie ma pozycji w czytelnej tabeli |
 
 Czego brakuje w Gherkinie: sprawdzenia koszyka (krok 3), komunikatu po dodaniu (krok 2), statusu „Opłacone”, nazwy nabywcy na fakturze. Czego brakuje w Azure Test Plans: osobnego kroku „koszyk pusty”; pozycja faktury jest w jednym zdaniu, a nie w tabeli Nazwa / Ilość / Cena / Wartość.
+
+## Ćwiczenie 10: CLAUDE.md a lista kontrolna (krok 1)
+
+| Pytanie z listy | Jest w CLAUDE.md? |
+|---|---|
+| 1. Nazwa i komentarz mówią, jakie wymaganie sprawdza test | częściowo („Nazwa testu po polsku opisuje oczekiwany wynik”) |
+| 2. Asercje sprawdzają wszystko, co obiecuje wymaganie | **brak** |
+| 3. Asercja padłaby, gdyby akcja nie zadziałała | **brak** |
+| 4. Test sprawdza efekt biznesowy | **brak** |
+| 5. Tekst w asercji jest dokładny | **brak** |
+| 6. Locatory opisują to, co widzi użytkownik | tak (kolejność `getByRole`, `getByLabel`, `getByText`, bez CSS) |
+| 7. `.first()` / `.nth()` nie ukrywa niejednoznaczności | częściowo (wiersz tabeli po treści) |
+| 8. Czekanie przez `await expect(...)` | tak (asercje web-first, bez `waitForTimeout` i `isVisible()`) |
+| 9. Test działa na świeżych danych i przy drugim uruchomieniu | **brak** (jest tylko `npm run db:reset`) |
+| 10. Właściwe konto | **brak** (są tylko konta demo) |
+| 11. Test niezależny od innych testów | **brak** |
+| 12. Widziałeś, że test potrafi paść | **brak** |
+| 13. `not` / `toBeHidden()` szuka tekstu, który aplikacja pokazuje | **brak** |
+| 14. Sprawdzenie ma postać `await expect(locator).toX()` | tak (asercje web-first) |
+| 15. Oczekiwana wartość pochodzi z wymagania | **brak** |
+
+Brakuje 10 pytań: 2, 3, 4, 5, 9, 10, 11, 12, 13, 15. Częściowo pokryte: 1 i 7.
+
+## Ćwiczenie 10: review testu ze skilla (krok 6)
+
+Test `tests/cwiczenia/10-filtr-kategorii.spec.ts`, wymaganie: filtr „Dziecko” pokazuje dokładnie 3 produkty.
+
+| Pytanie | Wynik |
+|---|---|
+| 2. Asercje sprawdzają całe wymaganie | tak: licznik `3`, liczba wierszy produktów `3` i każdy wiersz ma kategorię „Dziecko” |
+| 3. Asercja padnie bez akcji | tak: przed filtrem wierszy jest więcej niż 3 (asercja stanu przed akcją) |
+| 5. Dokładny tekst | tak: `toHaveText('Liczba produktów: 3')` |
+| 6–7. Locatory, bez `first()`/`nth()` | tak: `getByRole('row')` z filtrem, `getByLabel`, `getByText` |
+| 8. Czekanie | tak: tylko `await expect(...)` |
+| 9–11. Dane, konto, niezależność | test tylko czyta dane, bez logowania |
+| 12. Test potrafi paść | tak: po zmianie 3 → 4 `1 failed` (`Received: "Liczba produktów: 3"`), po przywróceniu `1 passed` |
+| 15. Wartość z wymagania | tak: 3 z wymagania |
+
+Wynik: brak „nie”, bez poprawek w `SKILL.md` ani `CLAUDE.md`.
+
+## Ćwiczenie 10: marketplace skilli (krok 7)
+
+- **Kto byłby właścicielem skilla?** Zespół QA, który go napisał, z jedną imienną osobą odpowiedzialną za zmiany. Ta osoba zatwierdza poprawki i pilnuje, żeby skill był zgodny z `CLAUDE.md` i listą kontrolną.
+- **Jak zgłosić poprawkę, gdy skill napisze zły test?** Zgłoszenie (issue albo pull request) w repo, z którego publikowany jest skill: prompt, plik testu, numer pytania z listy kontrolnej, którego test nie spełnił, i proponowana zmiana kroku w `SKILL.md`. Poprawka przechodzi review jak zwykły kod.
