@@ -17,7 +17,15 @@ test('dodanie balsamu do ciała do koszyka', async ({ page }) => {
 
   await wiersz.getByRole('button', { name: 'Dodaj do koszyka' }).click();
 
-  // Produkt jest na liście i nadal można go dodać
-  await expect(wiersz).toBeVisible();
-  await expect(wiersz.getByRole('button', { name: 'Dodaj do koszyka' })).toBeEnabled();
+  // Komunikat pojawia się tylko po udanym dodaniu (przed kliknięciem go nie ma)
+  await expect(page.getByText('Dodano do koszyka: Balsam do ciała')).toBeVisible();
+
+  // Produkt jest w koszyku klienta
+  await page.getByRole('link', { name: 'Koszyk' }).click();
+  const wierszKoszyka = page.getByRole('row').filter({ hasText: 'Balsam do ciała' });
+  await expect(wierszKoszyka).toBeVisible();
+
+  // Sprzątanie: balsam wraca z koszyka, żeby następne uruchomienie zaczynało od zera
+  await wierszKoszyka.getByRole('button', { name: 'Usuń' }).click();
+  await expect(wierszKoszyka).toHaveCount(0);
 });
