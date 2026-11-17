@@ -98,3 +98,37 @@ Wersja w Word (te same notatki w 7 tabelach): [notatki-cwiczenie-03.docx](notatk
 | 06-filtr-kategorii (cały plik) | że **wszystkie** wiersze należą do wybranej kategorii; że liczba wierszy w tabeli zgadza się z licznikiem; kafelków; pozostałych kategorii i opcji „Wszystkie” |
 
 > **Naprawione:** do testu `03-produkt-niedostepny.spec.ts` dopisałam brakującą asercję `await expect(wiersz.getByRole('button', { name: 'Dodaj do koszyka' })).toBeDisabled();`. Test przechodzi (`1 passed`).
+
+# Ćwiczenie 07: czerwone testy
+
+Krok 1: `npx playwright test --project=zepsute`
+
+| Test | Pierwsza linia błędu | Co widać w trace w chwili błędu | Przyczyna (jedno zdanie) |
+|---|---|---|---|
+| 01 | `Error: expect(locator).toBeVisible() failed` | Po wyszukaniu „szampon” w tabeli są dwa szampony: „Szampon dla dzieci” i „Szampon nawilżający”; błąd: `strict mode violation … resolved to 4 elements` | Locator `getByRole('cell', { name: 'Szampon' })` pasuje do 4 komórek (dwie nazwy produktów i dwa przyciski „Dodaj do koszyka: Szampon…”), bo „Szampon” to tylko fragment nazwy. |
+| 02 | `Error: locator.click: Test timeout of 30000ms exceeded.` | Formularz logowania z wypełnionym loginem i hasłem; przycisk ma napis „Zaloguj” | Test szuka przycisku „Zaloguj się”, a na stronie przycisk nazywa się „Zaloguj”, więc kliknięcie czeka 30 s na element, którego nie ma. |
+| 03 | `Error: expect(received).toBeGreaterThan(expected)` | Strona „Moje zamówienia” z napisem „Ładowanie…”, tabeli zamówień jeszcze nie ma | `count()` liczy wiersze w jednej chwili i nie czeka, więc liczy je, zanim lista zamówień się załaduje (0,5–2 s), i dostaje 0. |
+| 04 | `Error: expect(locator).toBeVisible() failed` (`getByText('Zapisano ustawienia')` → `element(s) not found`) | Strona ustawień ze „Stan: wyłączony”, ale komunikatu „Zapisano ustawienia” już nie ma | Komunikat znika po 3–5 s, a test sprawdza go dopiero po `waitForTimeout(6000)`, czyli zawsze za późno. |
+| 05 | `Error: locator.click: Test timeout of 30000ms exceeded.` (w logu: `element is not enabled`) | Pusty koszyk `tester09`, przycisk „Złóż zamówienie…” jest wyłączony (`disabled`) | Test zakłada, że w koszyku już coś jest, a koszyk `tester09` jest pusty, więc przycisk zamówienia jest wyłączony. |
+| 06 | `Error: expect(received).toContain(expected)` (`Received: …/logowanie?next=%2Fkonto%2Fadres`) | Strona logowania tuż po Enter, przekierowanie jeszcze się nie skończyło | `page.url()` odczytuje adres od razu po Enter i nie czeka na przekierowanie po zalogowaniu. |
+
+### Dlaczego Mirkowi testy 04–06 przechodziły
+
+| Test | Dlaczego „u mnie działa” |
+|---|---|
+| 04 | Pauzę dopisał później albo u niego komunikat jeszcze nie znikał. Z pauzą 6 s komunikat (3–5 s) zawsze zdąży zniknąć. |
+| 05 | W jego koszyku `tester09` leżał produkt dodany ręcznie albo przez inny test. Na czystym koncie koszyk jest pusty. |
+| 06 | Na szybkim laptopie przekierowanie kończyło się, zanim test odczytał adres. Na wolniejszym serwerze buildów nie zdąży. |
+
+### Poprawki
+
+| Test | Poprawka |
+|---|---|
+| 01 | `getByRole('cell', { name: 'Szampon nawilżający', exact: true })` |
+| 02 | przycisk `'Zaloguj'` zamiast `'Zaloguj się'` |
+| 03 | `await expect(page.getByRole('row').filter({ hasText: 'ZAM-' })).not.toHaveCount(0)` zamiast `count()` |
+| 04 | usunięty `waitForTimeout(6000)`; komunikat sprawdzany od razu po kliknięciu „Zapisz” |
+| 05 | test sam dodaje „Mydło w kostce” do koszyka i sprawdza „Dodano do koszyka…” przed złożeniem zamówienia |
+| 06 | `await expect(page).toHaveURL(/\/konto\/adres$/)` zamiast `expect(page.url()).toContain(...)` |
+
+Wyniki: 01–03 `3 passed`, test 03 z `--repeat-each=10` `10 passed`, 04–06 dwa razy pod rząd `3 passed`, cały projekt `zepsute` `6 passed`.
