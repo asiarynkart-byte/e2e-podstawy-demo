@@ -66,3 +66,38 @@ Dlaczego: adres „Praca” dodaje dopiero pierwszy test. Gdy uruchamia się ca�
 ## Dlaczego `11 passed` nic nie znaczyło
 
 Zielony test mówi tylko, że jego asercje przeszły, a nie że sprawdzają wymaganie. Testy Klaudiusza sprawdzały rzeczy widoczne już przed akcją (01, 06), szukały komunikatów, których nie ma (06), nie sprawdzały nic na stronie (09), patrzyły na złą cenę (10) albo działały tylko w parze z innym testem (08). Dopiero eksperyment „pomiń akcję albo zepsuj dane” pokazuje, czy test potrafi paść.
+
+## Ćwiczenie 08: oczekiwane wyniki (krok 1)
+
+TC-ADR-01 i `.feature` (scenariusz poprawny): 1) napis „Zalogowano jako user (user)”, 2) nagłówek „Zmiana adresu dostawy” i adres startowy w polach, 3) pola pokazują wpisane wartości, 4) komunikat „Zapisano adres dostawy.”, 5) po odświeżeniu pola zawierają nowy adres.
+TC-ADR-02 i `.feature` (szablon, 3 wiersze Przykładów): 6) „Popraw błędy w formularzu (1).”, 7) komunikat pod polem (inny dla każdego wiersza), 8) brak „Zapisano adres dostawy.”, 9) po ponownym otwarciu adres się nie zmienił.
+Razem 9 oczekiwanych wyników; 6–9 sprawdzane w 3 testach (kod pocztowy, telefon, puste miasto).
+
+## Ćwiczenie 08: poprawki do planu
+
+Pierwsza wersja planu (zanim powstał kod) i poprawki po review:
+
+| Punkt planu | Poprawka | Pytanie z listy |
+|---|---|---|
+| Testy błędnych danych sprawdzały tylko komunikat „Popraw błędy…” | dopisać komunikat pod polem z kolumny `komunikat` (dokładny tekst z aplikacji) | 2, 5 |
+| Brak sprawdzenia, że błędny adres się nie zapisał | po błędzie otworzyć „Adres dostawy” jeszcze raz i sprawdzić, że pola mają adres startowy; sprawdzić też brak „Zapisano adres dostawy.” (`toHaveCount(0)`) | 2, 3 |
+| Sprzątanie tylko na końcu testu poprawnego adresu | przywracać adres startowy w `afterEach`, żeby wrócił także po nieudanym teście | 9 |
+| Testy biegły równolegle na jednym koncie `user` | `test.describe.configure({ mode: 'serial' })` na początku grupy | 9, 11 |
+| Brak sprawdzenia stanu przed akcją | przed wpisaniem nowego adresu sprawdzić, że pola mają adres startowy (krok 2 TC-ADR-01) | 3 |
+| Konto | zostaje `user` / `user123`, zgodnie z przypadkiem testowym | 10 |
+
+## Ćwiczenie 08, część B: porównanie formatów (krok 6)
+
+| Krok w Azure Test Plans (`biuro-mikolaja.md`) | Linia w Gherkinie (`.feature`) | Różnica |
+|---|---|---|
+| 1. Logowanie `biuro`, napis „Zalogowano jako biuro (user)” | `Zakładając, że jestem zalogowany jako "biuro"…` | Gherkin nie podaje oczekiwanego napisu |
+| — (warunek wstępny „koszyk pusty”) | `Oraz mój koszyk jest pusty` | w Azure to tylko warunek wstępny, w Gherkinie osobny krok |
+| 2. Karta produktu, ilość 10, komunikat „Dodano do koszyka: Kalendarz adwentowy 2026” | `Jeżeli dodam do koszyka 10 sztuk…` | Gherkin nie ma komunikatu po dodaniu |
+| 3. Koszyk: 1 pozycja, ilość 10, „Pozycji: 1, razem: 399,90 zł” | brak | **Gherkin pomija sprawdzenie koszyka** |
+| 4. Faktura na firmę, NIP, nazwa, „Złóż zamówienie…”, komunikat z numerem | `Oraz zaznaczę "Faktura na firmę"…`, `Wtedy zobaczę komunikat "Złożono zamówienie: <numer>"` | brak |
+| 5. Strona zamówienia: „Nowe”, firma, NIP 2412241228, „Pobierz fakturę” | `Oraz na stronie zamówienia zobaczę status "Nowe" i NIP "2412241228"` | Gherkin nie wymaga nazwy firmy ani przycisku „Pobierz fakturę” |
+| 6–8. Admin: `/admin/zamowienia/<numer>`, „Opłacone”, potem „Wysłane”, status po każdym zapisie | `Jeżeli admin zmieni status… na "Opłacone", a potem na "Wysłane"` | Gherkin nie mówi o wylogowaniu, adresie panelu ani o sprawdzeniu statusu „Opłacone” |
+| 9. Klient: status „Wysłane” | `Wtedy na stronie zamówienia zobaczę status "Wysłane"` | Gherkin nie mówi o ponownym logowaniu |
+| 10. Plik `faktura-<numer>.html`, NIP nabywcy, nabywca, pozycja, „Razem do zapłaty” | `Wtedy pobiorę plik…`, `faktura będzie zawierać…`, tabela pozycji | Gherkin nie sprawdza nazwy nabywcy „Biuro Mikołaja”; Azure nie ma pozycji w czytelnej tabeli |
+
+Czego brakuje w Gherkinie: sprawdzenia koszyka (krok 3), komunikatu po dodaniu (krok 2), statusu „Opłacone”, nazwy nabywcy na fakturze. Czego brakuje w Azure Test Plans: osobnego kroku „koszyk pusty”; pozycja faktury jest w jednym zdaniu, a nie w tabeli Nazwa / Ilość / Cena / Wartość.
