@@ -5,9 +5,14 @@ import { zaloguj, zalogujPrzezApi } from '../pomocnicze/logowanie';
 // „Krem do twarzy na dzień”: cena 32,99 zł, promocja -20%, cena po promocji 26,39 zł,
 // ta sama na karcie produktu i w koszyku.
 
+test.beforeEach(async ({ request }) => {
+  // Pusty koszyk przed testem: inne testy tego konta mogły zostawić w nim krem
+  await zalogujPrzezApi(request);
+  expect((await request.delete('/api/cart')).status()).toBe(200);
+});
+
 test.afterEach(async ({ request }) => {
   // Sprzątanie przez API, także gdy test padł w połowie: pusty koszyk konta pary
-  await zalogujPrzezApi(request);
   expect((await request.delete('/api/cart')).status()).toBe(200);
 });
 
