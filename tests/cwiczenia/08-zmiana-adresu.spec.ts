@@ -43,7 +43,7 @@ test.describe('Zmiana adresu dostawy', () => {
     await page.getByLabel('Kod pocztowy').fill(adresStartowy.kod);
     await page.getByLabel('Miasto').fill(adresStartowy.miasto);
     await page.getByLabel('Telefon').fill(adresStartowy.telefon);
-    await page.getByRole('button', { name: 'Zapisz adres' }).click();
+    await page.getByRole('button', { name: 'Zapisz', exact: true }).click();
     await expect(page.getByText('Zapisano adres dostawy.')).toBeVisible();
   });
 
@@ -65,7 +65,7 @@ test.describe('Zmiana adresu dostawy', () => {
     await expect(page.getByLabel('Telefon')).toHaveValue('600 200 300');
 
     // Krok 4: zapis i komunikat
-    await page.getByRole('button', { name: 'Zapisz adres' }).click();
+    await page.getByRole('button', { name: 'Zapisz', exact: true }).click();
     await expect(page.getByText('Zapisano adres dostawy.')).toBeVisible();
 
     // Krok 5: po odświeżeniu pola nadal zawierają nowy adres (adres zapisał się na koncie)
@@ -80,7 +80,7 @@ test.describe('Zmiana adresu dostawy', () => {
   for (const dane of bledneDane) {
     test(`błędne pole „${dane.pole}” blokuje zapis adresu`, async ({ page }) => {
       await page.getByLabel(dane.pole).fill(dane.wartosc);
-      await page.getByRole('button', { name: 'Zapisz adres' }).click();
+      await page.getByRole('button', { name: 'Zapisz', exact: true }).click();
 
       // Komunikat na górze, komunikat pod polem, brak komunikatu o zapisie
       await expect(page.getByRole('alert')).toHaveText('Popraw błędy w formularzu (1).');

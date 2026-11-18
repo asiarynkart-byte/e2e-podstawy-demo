@@ -21,7 +21,7 @@ test('Biuro Mikołaja: zamówienie na firmę, status „Wysłane” i faktura z 
   await page.goto('/produkt/21');
   await page.getByLabel('Ilość').fill('10');
   await page.getByRole('button', { name: 'Dodaj do koszyka' }).click();
-  await expect(page.getByText('Dodano do koszyka: Kalendarz adwentowy 2026')).toBeVisible();
+  await expect(page.getByText('Produkt w koszyku: Kalendarz adwentowy 2026')).toBeVisible();
 
   // Krok 3. Koszyk: jedna pozycja, kalendarz w ilości 10, razem 399,90 zł
   await page.getByRole('link', { name: 'Koszyk' }).click();

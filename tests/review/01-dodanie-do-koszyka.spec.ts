@@ -18,7 +18,7 @@ test('dodanie balsamu do ciała do koszyka', async ({ page }) => {
   await wiersz.getByRole('button', { name: 'Dodaj do koszyka' }).click();
 
   // Komunikat pojawia się tylko po udanym dodaniu (przed kliknięciem go nie ma)
-  await expect(page.getByText('Dodano do koszyka: Balsam do ciała')).toBeVisible();
+  await expect(page.getByText('Produkt w koszyku: Balsam do ciała')).toBeVisible();
 
   // Produkt jest w koszyku klienta
   await page.getByRole('link', { name: 'Koszyk' }).click();

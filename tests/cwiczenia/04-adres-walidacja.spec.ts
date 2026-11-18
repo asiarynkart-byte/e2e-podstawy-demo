@@ -15,10 +15,10 @@ test('błędny kod pocztowy blokuje zapis adresu', async ({ page }) => {
   await page.getByRole('link', { name: 'Adres dostawy' }).click();
   await expect(page.getByRole('heading', { name: 'Zmiana adresu dostawy' })).toBeVisible();
 
-  // TODO 3: w polu „Kod pocztowy” wpisz 00000 (bez myślnika) i kliknij „Zapisz adres”.
+  // TODO 3: w polu „Kod pocztowy” wpisz 00000 (bez myślnika) i kliknij „Zapisz”.
   // Pozostałe pola są już wypełnione adresem z konta, więc błąd będzie tylko jeden.
   await page.getByLabel('Kod pocztowy').fill('00000');
-  await page.getByRole('button', { name: 'Zapisz adres' }).click();
+  await page.getByRole('button', { name: 'Zapisz', exact: true }).click();
 
   // TODO 4: sprawdź komunikat „Popraw błędy w formularzu (1).”
   await expect(page.getByRole('alert')).toHaveText('Popraw błędy w formularzu (1).');
