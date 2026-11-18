@@ -244,3 +244,24 @@ Test: tests/projekt/p16-ilosc-z-karty.spec.ts › P16: 24 sztuki „Kalendarz ad
       (failed na hotfix, passed bez APP_VERSION); ten sam błąd łapie tests/cwiczenia/08-biuro-mikolaja.spec.ts (krok 3).
 ```
 To nie jest kosmetyka: klient widzi do zapłaty mniej, niż zamówił.
+
+### Ćwiczenie 13: zgłoszenia na tablicę (konto tester05)
+
+Przed zgłoszeniem jeszcze raz: `tests/polowanie` na rc `8 failed`, na wersji zwykłej `8 passed`.
+
+| Zgłoszenie | Obszar | Wynik sędziego |
+|---|---|---|
+| `01-sortowanie-po-cenie.spec.ts` | sortowanie | Zaliczony błąd #5 |
+| `02-nieistniejace-zamowienie.spec.ts` | API | Zaliczony błąd #8 |
+| `03-cena-promocyjna-w-koszyku.spec.ts` | cena | Zaliczony błąd #1 |
+| `04-nowy-adres-nie-jest-domyslny.spec.ts` | adresy | Zaliczony błąd #7 |
+| `05-kod-pocztowy-adresu.spec.ts` | walidacja | Zaliczony błąd #6 |
+| `06-nip-nabywcy-na-fakturze.spec.ts` | faktura | Zaliczony błąd #3 |
+| `07-niedostepny-produkt.spec.ts` | koszyk | Zaliczony błąd #9 |
+| `FLAGA-ZN6MD` (`/api/promocja` po 27.11) | flaga | Niespodzianka #4 |
+| `FLAGA-9R6VC` (`/api/bozena/wymagania`, adres z komentarza w stopce) | flaga | Niespodzianka #5 |
+| `FLAGA-B38N2` (strona 404, np. `/nieistnieje`: „Mirek: U mnie działa”) | flaga | Niespodzianka #2 |
+| `FLAGA-WUR7S` (tryb Klaudiusza: kilka szybkich kliknięć w logo, flaga z `/tryb-klaudiusza`) | flaga | Niespodzianka #6 |
+
+Razem: 7 błędów i 4 niespodzianki. Nie znalezione: błędy #2, #4, #10 i niespodzianki #1, #3.
+Sprzątanie (krok 6): na rc koszyk tester05 pusty, w „Moje adresy” tylko „Adres główny”.
