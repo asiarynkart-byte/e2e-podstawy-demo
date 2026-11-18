@@ -265,3 +265,20 @@ Przed zgłoszeniem jeszcze raz: `tests/polowanie` na rc `8 failed`, na wersji zw
 
 Razem: 7 błędów i 4 niespodzianki. Nie znalezione: błędy #2, #4, #10 i niespodzianki #1, #3.
 Sprzątanie (krok 6): na rc koszyk tester05 pusty, w „Moje adresy” tylko „Adres główny”.
+
+### Ćwiczenie 13: druga runda polowania
+
+| # | Błąd na rc | Test | Wynik sędziego |
+|---|---|---|---|
+| 8 | Wygasły kod `JESIEN10` daje rabat -10% (na zwykłej: „Kod JESIEN10 wygasł 31.10.2026.”) | `tests/polowanie/08-wygasly-kod-rabatowy.spec.ts` (rc: failed, zwykła: 2× passed) | Zaliczony błąd #2 |
+
+Kod `JESIEN10` znaleziony w karcie `docs/cwiczenia/extra-d1-przegladarki-i-dane.md`.
+
+Sprawdzone w drugiej rundzie bez różnic: data i numer zamówienia, numer i data faktury, stan magazynu po zamówieniu firmowym,
+usuwanie jednej pozycji z koszyka, kod po usunięciu produktu, scalanie ilości z karty, kilka adresów i zmiana domyślnego,
+zapis adresu głównego, wyszukiwanie (polskie znaki, wielkie litery, `%`, `_`), ścieżki negatywne API, ceny z datą Czarnego Piątku,
+odrzucona i przyjęta karta (także z kodem), zamówienie z fakturą i z kodem w przeglądarce, kwoty powyżej 1000 zł,
+NIP z sumą kontrolną 10, nietypowe ilości („1,5”, „03”), statusy zamówień konta `user` i `biuro` (odczyt), strony admina jako klient,
+zaokrąglanie rabatów, czasy odpowiedzi, brak limitu adresów.
+
+Razem: 8 z 10 błędów (#1, #2, #3, #5, #6, #7, #8, #9) i 4 z 6 niespodzianek. Brakuje błędów #4 i #10.
