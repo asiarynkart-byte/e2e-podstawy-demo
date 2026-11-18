@@ -282,3 +282,13 @@ NIP z sumą kontrolną 10, nietypowe ilości („1,5”, „03”), statusy zam�
 zaokrąglanie rabatów, czasy odpowiedzi, brak limitu adresów.
 
 Razem: 8 z 10 błędów (#1, #2, #3, #5, #6, #7, #8, #9) i 4 z 6 niespodzianek. Brakuje błędów #4 i #10.
+
+### Ćwiczenie 13: trzecia runda (szukanie #4 i #10), bez nowych różnic
+
+Sprawdzone bez różnic: źle sformatowany JSON i typy pól w API, nagłówek Authorization (pusty, Basic), długość nazwy firmy i NIP ze spacji,
+warianty numeru karty (długość, litery, odrzucona karta zostawia koszyk), nazwy miast (ogonki, łącznik, dwa człony, cyfry, długość),
+adres dostawy w zamówieniu (adres domyślny z profilu, zmiana adresu po zamówieniu, usunięcie adresu), zakup z pozycją ponad stan,
+wyszukiwanie bez polskich znaków i wielkimi literami, wyszukiwanie z sortowaniem i kategorią (kolejność wierszy w UI i API),
+nagłówki odpowiedzi i plik faktury `faktura-ZAM-….html`.
+Nie sprawdzone: funkcje admina (status Nowe → Opłacone → Wysłane, anulowanie, eksport) — na rc hasło admina zna tylko trener;
+dostęp do adresu innego konta — próba zablokowana przez uprawnienia narzędzia.
