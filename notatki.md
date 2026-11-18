@@ -132,3 +132,26 @@ Krok 1: `npx playwright test --project=zepsute`
 | 06 | `await expect(page).toHaveURL(/\/konto\/adres$/)` zamiast `expect(page.url()).toContain(...)` |
 
 Wyniki: 01–03 `3 passed`, test 03 z `--repeat-each=10` `10 passed`, 04–06 dwa razy pod rząd `3 passed`, cały projekt `zepsute` `6 passed`.
+
+# Ćwiczenie 11: funkcja logowania i uruchamianie wybranych testów
+
+## Krok 1: funkcja `zaloguj` (`tests/pomocnicze/logowanie.ts`)
+
+| Pytanie | Odpowiedź |
+|---|---|
+| Którym kontem loguje `await zaloguj(page);` bez zmiennych? | `user` / `user123` (domyślne wartości w liniach 10–11, gdy nie ma `APP_USER` i `APP_PASSWORD`) |
+| Jak zalogować inne konto bez zmiany pliku funkcji? | 1) zmienne `$env:APP_USER` i `$env:APP_PASSWORD` w oknie testów; 2) argumenty w teście: `await zaloguj(page, 'biuro', 'biuro123');` |
+| Co się stanie przy złym haśle? | Test padnie od razu na logowaniu, bo linia 22 sprawdza napis „Zalogowano jako <login>”, którego po złym haśle nie ma |
+
+## Kroki 3–5: polecenia i wyniki
+
+| Polecenie | Wynik |
+|---|---|
+| `npx playwright test tests/czytanie/02-moje-zamowienia.spec.ts` | `2 passed` |
+| `npx playwright test tests/czytanie` | `17 passed` |
+| `npx playwright test --grep "@zamowienia"` | `2 passed` |
+| `npx playwright test --grep-invert "@zamowienia"` | brak testów z `tests/czytanie/02-moje-zamowienia` (jest tylko inny plik `tests/review/02-…`) |
+| `npx playwright test tests/czytanie --project=chromium` | `17 passed` |
+| `npx playwright test tests/czytanie/01-wyszukiwarka.spec.ts --headed` | `2 passed`, okno przeglądarki otwiera się i zamyka |
+| `$env:BASE_URL="https://namssor-376292984721.europe-central2.run.app"`, potem `npx playwright test tests/smoke.spec.ts`, potem `Remove-Item Env:BASE_URL` | `4 passed` na wspólnym serwerze |
+| `$env:APP_USER="tester05"`, `$env:APP_PASSWORD="czarny-piatek-2026"`, potem `npx playwright test tests/czytanie/02-moje-zamowienia.spec.ts` | `2 failed`, oba na lokatorze z `ZAM-1001`: logowanie działa, ale tester nie ma zamówień konta `user` |
