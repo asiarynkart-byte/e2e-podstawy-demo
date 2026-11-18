@@ -189,3 +189,19 @@ Niespodzianki Klaudiusza (takie same na obu adresach), do pola „Flaga”:
 
 Sprawdzone bez różnic: logowanie i `next`, wylogowanie, kody rabatowe, walidacja koszyka i zamówień (qty, NIP), adres główny, płatność kartą, odliczanie promocji, 401 bez logowania.
 Nie sprawdzone: funkcje admina (na serwerze hasło admina zna tylko trener). Zostały 3 błędy z 10 i 4 niespodzianki z 6.
+
+## Ćwiczenie 12b: zmiana wymagań Bożeny z 13:00
+
+| Test | Linie, które zostają | Linie do zmiany |
+|---|---|---|
+| P13 | żądanie `GET /api/promocja` z nagłówkiem `X-Namssor-Teraz`, asercja statusu 200, cały test „jutro” → 400 | data `2026-11-20` → dwie daty `2026-11-26` i `2026-11-27`; `days_left` 7 → 1 i 0; komunikat → „…został 1 dzień.” i „…trwa! Tylko dziś najniższe ceny.”; jeden test → pętla, data w nazwie |
+| P16 | logowanie, pusty koszyk przed testem i sprzątanie po teście, „Dodaj do koszyka”, sprawdzenie jednej pozycji i „razem” | produkt `/produkt/9` „Żel pod prysznic” → `/produkt/21` „Kalendarz adwentowy 2026”; ilość 3 → 24; wartość „29,97 zł” → „959,76 zł” |
+
+| Krok | Wynik |
+|---|---|
+| 2–3: `npx playwright test tests/projekt/p13 tests/projekt/p16` | `4 passed` (osobno 26.11 i 27.11) |
+| 4a: w P13 `2026-11-26` → `2026-11-25` | `1 failed` (`days_left` 2 zamiast 1), po przywróceniu passed |
+| 4b: w P16 asercja ilości 24 → 23 | `1 failed` („24” zamiast „23”), po przywróceniu passed |
+| cały pakiet `tests/projekt --repeat-each=3 --workers=1` | `33 passed` |
+
+Sprzątanie P16 opróżnia cały koszyk przez API, więc działa także dla nowego produktu.
