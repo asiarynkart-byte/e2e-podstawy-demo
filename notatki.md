@@ -155,3 +155,37 @@ Wyniki: 01–03 `3 passed`, test 03 z `--repeat-each=10` `10 passed`, 04–06 dw
 | `npx playwright test tests/czytanie/01-wyszukiwarka.spec.ts --headed` | `2 passed`, okno przeglądarki otwiera się i zamyka |
 | `$env:BASE_URL="https://namssor-376292984721.europe-central2.run.app"`, potem `npx playwright test tests/smoke.spec.ts`, potem `Remove-Item Env:BASE_URL` | `4 passed` na wspólnym serwerze |
 | `$env:APP_USER="tester05"`, `$env:APP_PASSWORD="czarny-piatek-2026"`, potem `npx playwright test tests/czytanie/02-moje-zamowienia.spec.ts` | `2 failed`, oba na lokatorze z `ZAM-1001`: logowanie działa, ale tester nie ma zamówień konta `user` |
+
+## Ćwiczenie 12: projekt (P2, P3, P5, P11)
+
+| Scenariusz | Plik | Wynik |
+|---|---|---|
+| P2 koszyk wymaga logowania | `tests/projekt/p2-koszyk-logowanie.spec.ts` | passed |
+| P3 admin dodaje produkt (lokalnie) | `tests/projekt/p3-admin-dodaje-produkt.spec.ts` | passed; po zmianie `12,50 zł` na `12,51 zł`: failed |
+| P5 katalog w API | `tests/projekt/p5-api-katalog.spec.ts` | passed |
+| P11 kod rabatowy | `tests/projekt/p11-kod-rabatowy.spec.ts` | 3 passed; po zmianie `-1,00 zł` na `-1,01 zł`: failed |
+
+`npx playwright test tests/projekt --repeat-each=3 --workers=1` → `21 passed`.
+P3 nie sprząta, bo panel nie ma usuwania produktu: każda nazwa jest unikalna (data i godzina).
+
+## Ćwiczenie 13: polowanie na wersji rc (konto tester05)
+
+Czarna skrzynka: tylko przeglądarka, `/api/docs` i odpowiedzi API, bez kodu z `app/`.
+Każdy test: `failed` na rc, `passed` na wersji zwykłej (dwa razy pod rząd, sprząta po sobie).
+
+| # | Błąd na rc | Test | rc | zwykła |
+|---|---|---|---|---|
+| 1 | Sortowanie po cenie układa ceny jak tekst („10,99” przed „4,99”), w API i na stronie | `tests/polowanie/01-sortowanie-po-cenie.spec.ts` (2 testy) | 2 failed | 2 passed |
+| 2 | `GET /api/orders/ZAM-9999` zwraca 200 i `{}` zamiast 404 | `02-nieistniejace-zamowienie.spec.ts` | failed | passed |
+| 3 | Promocja liczona dwa razy w koszyku: krem 21,11 zł zamiast 26,39 zł | `03-cena-promocyjna-w-koszyku.spec.ts` | failed | passed |
+| 4 | Nowy adres w profilu od razu staje się domyślny | `04-nowy-adres-nie-jest-domyslny.spec.ts` | failed | passed |
+| 5 | Adres w profilu przyjmuje zły kod pocztowy (`00950`, `00-95`) | `05-kod-pocztowy-adresu.spec.ts` | failed | passed |
+| 6 | Na fakturze NIP nabywcy = NIP sprzedawcy (1234563218) | `06-nip-nabywcy-na-fakturze.spec.ts` | failed | passed |
+| 7 | Niedostępny produkt (np. maska, id 3) ma aktywny przycisk „Dodaj do koszyka” | `07-niedostepny-produkt.spec.ts` | failed | passed |
+
+Niespodzianki Klaudiusza (takie same na obu adresach), do pola „Flaga”:
+- `GET /api/promocja` z nagłówkiem `X-Namssor-Teraz` po 27.11.2026 (np. `2026-11-28`): „Bożena: przesuwamy na poniedziałek.”, `FLAGA-ZN6MD`;
+- `/api/bozena/wymagania` (adres z komentarza w stopce strony): `FLAGA-9R6VC`.
+
+Sprawdzone bez różnic: logowanie i `next`, wylogowanie, kody rabatowe, walidacja koszyka i zamówień (qty, NIP), adres główny, płatność kartą, odliczanie promocji, 401 bez logowania.
+Nie sprawdzone: funkcje admina (na serwerze hasło admina zna tylko trener). Zostały 3 błędy z 10 i 4 niespodzianki z 6.
