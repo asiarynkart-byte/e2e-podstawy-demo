@@ -205,3 +205,42 @@ Nie sprawdzone: funkcje admina (na serwerze hasło admina zna tylko trener). Zos
 | cały pakiet `tests/projekt --repeat-each=3 --workers=1` | `33 passed` |
 
 Sprzątanie P16 opróżnia cały koszyk przez API, więc działa także dla nowego produktu.
+
+## Ćwiczenie 12c: hotfix Mirka
+
+Przed hotfiksem (`db:reset`, `npx playwright test --workers=1`): `74 passed`, `0 failed`, `7 skipped`
+(wcześniej poprawiony na `main` mój test `polowanie/03`: zakładał pusty koszyk konta `user`).
+Z `$env:APP_VERSION="hotfix"`: `55 passed`, `14 failed`, `7 skipped`.
+
+| Test (plik i linia) | Pierwsza linia błędu | Przyczyna | Decyzja |
+|---|---|---|---|
+| `tests/cwiczenia/02-koszyk.spec.ts:7` | `toBeVisible` czeka na „Dodano do koszyka: Krem do twarzy na dzień” | komunikat ma teraz tekst „Produkt w koszyku: …”: zmieniony tekst | test do poprawy |
+| `tests/review/01-dodanie-do-koszyka.spec.ts:6` | jak wyżej, „Dodano do koszyka: Balsam do ciała” | zmieniony tekst komunikatu | test do poprawy |
+| `tests/cwiczenia/08-biuro-mikolaja.spec.ts:9` | najpierw „Dodano do koszyka: …”, po poprawce `getByText('Pozycji: 1, razem: 399,90 zł')` not found, na ekranie „razem: 39,99 zł” | 1) zmieniony tekst komunikatu; 2) suma „razem” liczy 1 sztukę zamiast 10 | test do poprawy (tekst) + **błąd do zgłoszenia** |
+| `tests/projekt/p16-ilosc-z-karty.spec.ts:19` | `toHaveText` Expected „959,76 zł”, Received „39,99 zł” (`cart-total`) | wiersz ma wartość 959,76 zł, a „razem” 39,99 zł: aplikacja liczy źle | **błąd do zgłoszenia** |
+| `tests/cwiczenia/04-adres-walidacja.spec.ts:7` | `Test timeout of 30000ms exceeded`, czeka na przycisk „Zapisz adres” | przycisk ma teraz napis „Zapisz” | test do poprawy |
+| `tests/cwiczenia/08-zmiana-adresu.spec.ts:50` (+3 testy `:81` pominięte w trybie serial) | timeout, przycisk „Zapisz adres” | przycisk „Zapisz” | test do poprawy |
+| `tests/review/03-adres-walidacja.spec.ts:7` | timeout, przycisk „Zapisz adres” | przycisk „Zapisz” | test do poprawy |
+| `tests/review/05-zmiana-adresu.spec.ts:6` | timeout, przycisk „Zapisz adres” | przycisk „Zapisz” | test do poprawy |
+| `tests/projekt/p11-kod-rabatowy.spec.ts:27` (+2 pominięte) | timeout, przycisk „Zastosuj kod” | przycisk ma napis „Użyj kodu” | test do poprawy |
+| `tests/review/06-kod-rabatowy.spec.ts:6` | timeout, przycisk „Zastosuj kod” | przycisk „Użyj kodu” | test do poprawy |
+| `tests/czytanie/05-karta-produktu.spec.ts:13` | `toContainText` Expected „Dostępny”, Received „Na stanie: 100 szt.” | na karcie produktu nowy tekst dostępności | test do poprawy |
+| `tests/smoke.spec.ts:36` | jak wyżej, „Na stanie: 100 szt.” | nowy tekst dostępności | test do poprawy |
+| `tests/czytanie/05-karta-produktu.spec.ts:26` | `toHaveText` Expected „Niedostępny”, Received „Chwilowo brak” | nowy tekst niedostępności (przycisk dalej wyłączony) | test do poprawy |
+| `tests/polowanie/07-niedostepny-produkt.spec.ts:6` | `getByText('Niedostępny')` not found | „Chwilowo brak” na karcie produktu | test do poprawy |
+
+Gałąź `hotfix-testy` (commit „Testy pod hotfix: nowe etykiety”, 14 plików), z `APP_VERSION=hotfix`:
+`72 passed`, `2 failed`, `7 skipped`. Czerwone zostały tylko testy z decyzją „błąd do zgłoszenia” (P16 i Biuro Mikołaja).
+Po `git switch main` i `Remove-Item Env:APP_VERSION`: `74 passed`, `7 skipped`, bez `failed`.
+
+Zgłoszenie dla Mirka:
+```
+Tytuł: Suma „razem” w koszyku liczy jedną sztukę zamiast całej ilości
+Wersja: hotfix
+Kroki: 1. Zaloguj się jako user. 2. Otwórz kartę „Kalendarz adwentowy 2026”, wpisz ilość 24, kliknij „Dodaj do koszyka”. 3. Otwórz „Koszyk”.
+Oczekiwany wynik: wiersz: ilość 24, wartość 959,76 zł; „razem: 959,76 zł” (suma kolumny „Wartość”).
+Faktyczny wynik: wiersz poprawny (24, 959,76 zł), ale „Pozycji: 1, razem: 39,99 zł”. W API GET /api/cart: subtotal_cents 95976, total_cents 3999.
+Test: tests/projekt/p16-ilosc-z-karty.spec.ts › P16: 24 sztuki „Kalendarz adwentowy 2026” z karty produktu dają w koszyku wartość 959,76 zł
+      (failed na hotfix, passed bez APP_VERSION); ten sam błąd łapie tests/cwiczenia/08-biuro-mikolaja.spec.ts (krok 3).
+```
+To nie jest kosmetyka: klient widzi do zapłaty mniej, niż zamówił.
