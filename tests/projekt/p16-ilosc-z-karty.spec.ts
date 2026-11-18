@@ -14,22 +14,24 @@ test.afterEach(async ({ request }) => {
   expect((await request.delete('/api/cart')).status()).toBe(200);
 });
 
-test('P16: 3 sztuki „Żel pod prysznic” z karty produktu dają w koszyku wartość 29,97 zł', async ({ page }) => {
-  await zaloguj(page);
-  await page.goto('/produkt/9');
-  await expect(page.getByRole('heading', { name: 'Żel pod prysznic' })).toBeVisible();
+// Zmiana wymagań Bożeny z 13:00 (karta 12b): Biuro Mikołaja kupuje 24 kalendarze zamiast 3 żeli.
 
-  await page.getByLabel('Ilość').fill('3');
+test('P16: 24 sztuki „Kalendarz adwentowy 2026” z karty produktu dają w koszyku wartość 959,76 zł', async ({ page }) => {
+  await zaloguj(page);
+  await page.goto('/produkt/21');
+  await expect(page.getByRole('heading', { name: 'Kalendarz adwentowy 2026' })).toBeVisible();
+
+  await page.getByLabel('Ilość').fill('24');
   await page.getByRole('button', { name: 'Dodaj do koszyka' }).click();
 
   await page.goto('/koszyk');
-  const wiersz = page.getByRole('row').filter({ hasText: 'Żel pod prysznic' });
+  const wiersz = page.getByRole('row').filter({ hasText: 'Kalendarz adwentowy 2026' });
 
-  // Oczekiwany wynik 1: ilość 3 i wartość 29,97 zł w wierszu żelu
-  await expect(wiersz.getByTestId('cart-item-qty')).toHaveText('3');
-  await expect(wiersz.getByRole('cell', { name: '29,97 zł', exact: true })).toBeVisible();
+  // Oczekiwany wynik 1: ilość 24 i wartość 959,76 zł w wierszu kalendarza
+  await expect(wiersz.getByTestId('cart-item-qty')).toHaveText('24');
+  await expect(wiersz.getByRole('cell', { name: '959,76 zł', exact: true })).toBeVisible();
 
-  // Oczekiwany wynik 2: koszyk ma jedną pozycję, więc suma kolumny „Wartość” to 29,97 zł, tyle samo co „razem”
+  // Oczekiwany wynik 2: koszyk ma jedną pozycję, więc suma kolumny „Wartość” to 959,76 zł, tyle samo co „razem”
   await expect(page.getByTestId('cart-item')).toHaveCount(1);
-  await expect(page.getByTestId('cart-total')).toHaveText('29,97 zł');
+  await expect(page.getByTestId('cart-total')).toHaveText('959,76 zł');
 });
